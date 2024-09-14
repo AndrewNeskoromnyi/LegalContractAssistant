@@ -45,7 +45,7 @@ async function getOpenAIResponseFromAssistant(article,annotation,errorsectionid)
 try{
   //todo do not exposu API key in browser - dangerouslyAllowBrowser: true
     const openai = new OpenAI({
-      apiKey: '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',
+      apiKey: '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',
       dangerouslyAllowBrowser: true
   });
   
