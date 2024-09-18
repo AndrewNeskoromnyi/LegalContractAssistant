@@ -29,8 +29,12 @@
     "@orcid/bibtex-parse-js": "0.0.25",
     "core-js": "^3.37.1",
     "openai": "^4.61.0",
+<<<<<<< HEAD
     "regenerator-runtime": "^0.14.1",
     "wikeddiff": "^1.0.0"
+=======
+    "regenerator-runtime": "^0.14.1"
+>>>>>>> aca24b35e7bf8a02d8f724197711e93d7e452fc3
   },
   "devDependencies": {
     "@babel/core": "^7.24.7",
