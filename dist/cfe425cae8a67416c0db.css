@@ -80,3 +80,13 @@
 b {
     font-weight: bold;
 }
+.error{
+    color: #D8000C;
+    background-color: #FFBABA;
+}
+.wait{
+    color: orange;
+    background-color: azure;
+    font-weight: bold;
+    text-align: center;
+}

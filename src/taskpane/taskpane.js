@@ -5,6 +5,7 @@
 
 /* global document, Office, Word */
 import OpenAI from "openai";
+import { WikEdDiff } from "wikeddiff";
 
 const bibtexParser = require("@orcid/bibtex-parse-js");
 let bibFileContent;
@@ -45,12 +46,12 @@ async function getOpenAIResponseFromAssistant(article,annotation,errorsectionid)
 try{
   //todo do not exposu API key in browser - dangerouslyAllowBrowser: true
     const openai = new OpenAI({
-      apiKey: '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',
+      apiKey: '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',
       dangerouslyAllowBrowser: true
   });
   
 let assistantId = "asst_BnExFeePPpmWiBzyNfkWrAaP";
-let question = 'Change Article ' + article + ' in a way that "' + annotation + '". Show only revised version of '+ article +'. Highlight the changes using Italic font.';
+let question = 'Change Article ' + article + ' in a way that "' + annotation + '". Show only revised version of '+ article +'.';
 
 const thread = await openai.beta.threads.create({
   messages: [
@@ -151,7 +152,7 @@ async function populateCitationsFromFile() {
       let citationHtml = `<section><input type="radio" id="${citationsFromFile[citation].citationKey}" name="citation" value='${citationsFromFile[citation].entryTags.article}|${citationsFromFile[citation].entryTags.annotation}'>
       <label for="${citationsFromFile[citation].citationKey}"><b>${citationsFromFile[citation].entryTags.annotation}</b><br>${citationsFromFile[citation].entryTags.article}</label><br><br>
       <div>
-      <textarea class="input" id="openAIPanel${citationsFromFile[citation].citationKey}" rows="8" cols="80"  style="display: none;"></textarea>
+      <div class="taria" id="openAIPanel${citationsFromFile[citation].citationKey}" style="display: none;"></div>
       <\div>
       <div class="error" id="error${citationsFromFile[citation].citationKey}" style="display: none;">
       <\div>
@@ -201,8 +202,21 @@ if (String($openAISection.text()).trim().length == 0)
   $('#please_wait').show();
 
   // textarea is empty
-  await getOpenAIResponseFromAssistant(article,annotation,errorsectionId);
-  $openAISection.text(openAIResponse); //populate panel with response from openAI
+  //await getOpenAIResponseFromAssistant(article,annotation,errorsectionId);
+
+ // var wikEdDiffConfig;
+ // if (wikEdDiffConfig === undefined) { wikEdDiffConfig = {}; }
+ // wikEdDiffConfig.fullDiff = true;
+ // wikEdDiffConfig.showBlockMoves = false;
+  
+  var wikEdDiff = new WikEdDiff();
+  var diffHtml = wikEdDiff.diff(
+    "Lorem ipsum 3. Same text 1 and 2.",
+    "Lorem ipsum 969 and 100. Same text must be typed."
+  );
+
+  $openAISection.html(diffHtml);
+  //$openAISection.text(openAIResponse); //populate panel with response from openAI
 
   //Hide Wait, re-enable controls
   $radioButtons.children('input[type=radio]').prop('disabled', false);
