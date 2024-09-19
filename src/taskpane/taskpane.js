@@ -10,6 +10,7 @@ import { WikEdDiff } from "wikeddiff";
 const bibtexParser = require("@orcid/bibtex-parse-js");
 let bibFileContent;
 let openAIResponse = "";
+let selectedArticle="";
 
 Office.onReady((info) => {
   $(document).ready(function () {
@@ -18,7 +19,7 @@ Office.onReady((info) => {
       $("#bib-file").on("change", () => tryCatch(getFileContents));
       search();
       $("#replace-suggestion").on("click", () => tryCatch(replaceSuggestion));
-      $("#insert-suggestion").on("click", () => tryCatch(insertSuggestion));
+      $("#insert-suggestion").on("click", () => tryCatch(insertSuggestionAfterArticleHeader));
       $("#clear").on("click", () => tryCatch(clearSelection));
     }
   });
@@ -46,16 +47,12 @@ async function getOpenAIResponseFromAssistant(article,annotation,errorsectionid)
 try{
   //todo do not exposu API key in browser - dangerouslyAllowBrowser: true
     const openai = new OpenAI({
-<<<<<<< HEAD
-      apiKey: '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',
-=======
-      apiKey: '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',
->>>>>>> aca24b35e7bf8a02d8f724197711e93d7e452fc3
+      apiKey: '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',
       dangerouslyAllowBrowser: true
   });
   
 let assistantId = "asst_BnExFeePPpmWiBzyNfkWrAaP";
-let question = 'Change Article ' + article + ' in a way that "' + annotation + '". Show only revised version of '+ article +'.';
+let question = 'Change Article ' + article + ' in a way that "' + annotation + '". Show only revised version of '+ article +'.Convert text to HTML. Use <html> tag for beginning of the text. Use </html> tag for the end of the text. Highlight changed text in yellow. Highlight added text in red. Do not show article name. Convert original links to html.';
 
 const thread = await openai.beta.threads.create({
   messages: [
@@ -82,7 +79,9 @@ if (result.status == 'completed') {
   const messages = await openai.beta.threads.messages.list(threadId);
   
   openAIResponse = messages.data[0].content[0].text.value;
-  openAIResponse = String(openAIResponse).replace("\n",String.fromCharCode(11));
+  let htmlBegin=String(openAIResponse).indexOf("<html>");
+  let htmlEnd=String(openAIResponse).indexOf("</html>");
+  openAIResponse = String(openAIResponse).substring(htmlBegin,htmlEnd+7).trim();
   
 }
 
@@ -177,7 +176,9 @@ async function populateCitationsFromFile() {
         enableButtons();
 
         let errorSectionId=`error${$(this).prop("id")}`;
-        findArticle(article.replace('Article','').trim(),errorSectionId)
+ selectedArticle = article.replace('Article','').trim();
+
+        findArticle(selectedArticle,errorSectionId)
 
         
         openAIPanel(`openAIPanel${$(this).prop("id")}`,article,annotation,errorSectionId);
@@ -206,21 +207,21 @@ if (String($openAISection.text()).trim().length == 0)
   $('#please_wait').show();
 
   // textarea is empty
-  //await getOpenAIResponseFromAssistant(article,annotation,errorsectionId);
+  await getOpenAIResponseFromAssistant(article,annotation,errorsectionId);
 
- // var wikEdDiffConfig;
- // if (wikEdDiffConfig === undefined) { wikEdDiffConfig = {}; }
- // wikEdDiffConfig.fullDiff = true;
- // wikEdDiffConfig.showBlockMoves = false;
+//  // var wikEdDiffConfig;
+//  // if (wikEdDiffConfig === undefined) { wikEdDiffConfig = {}; }
+//  // wikEdDiffConfig.fullDiff = true;
+//  // wikEdDiffConfig.showBlockMoves = false;
   
-  var wikEdDiff = new WikEdDiff();
-  var diffHtml = wikEdDiff.diff(
-    "Lorem ipsum 3. Same text 1 and 2.",
-    "Lorem ipsum 969 and 100. Same text must be typed."
-  );
+//   var wikEdDiff = new WikEdDiff();
+//   var diffHtml = wikEdDiff.diff(
+//     "Lorem ipsum 3. Same text 1 and 2.",
+//     "Lorem ipsum 969 and 100. Same text must be typed."
+//   );
 
-  $openAISection.html(diffHtml);
-  //$openAISection.text(openAIResponse); //populate panel with response from openAI
+ // $openAISection.html(diffHtml);
+  $openAISection.html(openAIResponse); //populate panel with response from openAI
 
   //Hide Wait, re-enable controls
   $radioButtons.children('input[type=radio]').prop('disabled', false);
@@ -231,6 +232,46 @@ $openAISection.show();
 
 }
 
+// Inserts the suggestion after selected text in the document.
+async function insertSuggestionAfterArticleHeader() {
+  await Word.run(async (context) => {
+    let paragraphs = context.document.body.paragraphs;
+    context.load(paragraphs, ['items']);
+
+    // Synchronize the document state by executing the queued commands
+    await context.sync();
+
+    let listItems =  [];
+    for (let i = 0; i < paragraphs.items.length; ++i) {
+        let item = paragraphs.items[i];
+
+        context.load(item, ['text', 'style', 'styleBuiltIn']);
+
+        // Synchronize the document state by executing the queued commands
+        //await context.sync();
+
+            if (item.text === selectedArticle) {
+                let newLineItem = item.getNextOrNullObject();
+                context.load(item, ['text', 'style', 'styleBuiltIn']);
+                newLineItem.insertParagraph(openAIResponse, 'After');
+            }
+
+        
+        // if (item.style === 'Heading 1' || item.style === 'Heading 2'|| item.style === 'Heading 3') {
+        //     listItems.push({
+        //         primaryText: item.text + ' (' + item.style + ')'
+        //     });
+
+        //     if (item.text === selectedArticle) {
+        //         let newLineItem = item.getNextOrNullObject();
+        //         context.load(item, ['text', 'style', 'styleBuiltIn']);
+        //         newLineItem.insertParagraph(openAIResponse, 'After');
+        //     }
+        // }
+    }
+    await context.sync()
+  });
+}
 
 // Inserts the suggestion after selected text in the document.
 async function insertSuggestion() {
@@ -290,6 +331,7 @@ async function findArticle(articletext,errorsectionid) {
    
     searchResults.getFirst().select();
     await context.sync();
+
     }
     catch (error) {
       let $errorSection = $("#"+errorsectionid);
