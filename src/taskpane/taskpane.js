@@ -30,7 +30,7 @@ async function getOpenAIResponse(question) {
 
   //todo do not exposu API key in browser - dangerouslyAllowBrowser: true
     const openai = new OpenAI({
-      apiKey: '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',
+      apiKey: '',
       dangerouslyAllowBrowser: true
   });
   
@@ -47,7 +47,7 @@ async function getOpenAIResponseFromAssistant(article,annotation,errorsectionid)
 try{
   //todo do not exposu API key in browser - dangerouslyAllowBrowser: true
     const openai = new OpenAI({
-      apiKey: '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',
+      apiKey: '',
       dangerouslyAllowBrowser: true
   });
   
@@ -235,6 +235,8 @@ $openAISection.show();
 // Inserts the suggestion after selected text in the document.
 async function insertSuggestionAfterArticleHeader() {
   await Word.run(async (context) => {
+
+    try {
     let paragraphs = context.document.body.paragraphs;
     context.load(paragraphs, ['items']);
 
@@ -248,13 +250,47 @@ async function insertSuggestionAfterArticleHeader() {
         context.load(item, ['text', 'style', 'styleBuiltIn']);
 
         // Synchronize the document state by executing the queued commands
-        //await context.sync();
+        await context.sync();
 
             if (item.text === selectedArticle) {
-                let newLineItem = item.getNextOrNullObject();
-                context.load(item, ['text', 'style', 'styleBuiltIn']);
-                newLineItem.insertParagraph(openAIResponse, 'After');
+
+              let paragraphsToDelete = [];
+              var nextParagraph;
+              var j=i+1;
+
+              while (true) {
+                nextParagraph = paragraphs.items[j];
+                context.load(nextParagraph, ['text', 'isListItem','fields']);
+                await context.sync();
+                if (nextParagraph.isListItem)
+                {
+                  break;
+                }
+                else
+                {
+                  paragraphsToDelete.push(nextParagraph);
+                }
+                j=j+1;
             }
+             
+            for (const p of paragraphsToDelete) {
+              p.delete();
+          }
+          
+                await context.sync();
+
+                item.insertBreak(Word.BreakType.line, Word.InsertLocation.before);
+                await context.sync();
+
+                item.insertHtml(openAIResponse, 'End');
+                await context.sync();
+                //delete next paragraph
+
+                break;
+
+                //newLineItem.insertHtml(openAIResponse, 'After');
+              }
+
 
         
         // if (item.style === 'Heading 1' || item.style === 'Heading 2'|| item.style === 'Heading 3') {
@@ -270,6 +306,10 @@ async function insertSuggestionAfterArticleHeader() {
         // }
     }
     await context.sync()
+  }
+ catch (error) {
+    console.log(error);
+  }
   });
 }
 
@@ -282,8 +322,9 @@ async function insertSuggestion() {
     
     const doc = context.document;
     const originalRange = doc.getSelection();
+
     
-    originalRange.insertText(suggestion, Word.InsertLocation.end);
+    originalRange.insertHtml(suggestion, 'After');
 
     await context.sync();
     console.log(`Inserted suggestion: ${citationsuggestion}`);
