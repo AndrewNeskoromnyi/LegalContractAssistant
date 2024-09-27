@@ -5,7 +5,7 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const urlDev = "https://localhost:3000/";
-const urlProd = "https://www.contoso.com/"; // CHANGE THIS TO YOUR PRODUCTION DEPLOYMENT LOCATION
+const urlProd = "https://syngraphus.com/LegalContractWordAddIn/"; // CHANGE THIS TO YOUR PRODUCTION DEPLOYMENT LOCATION
 
 async function getHttpsOptions() {
   const httpsOptions = await devCerts.getHttpsServerOptions();
@@ -77,6 +77,12 @@ module.exports = async (env, options) => {
           },
         ],
       }),
+/*       new webpack.DefinePlugin({
+        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+        API_URL: process.env.NODE_ENV === 'production' 
+          ? JSON.stringify('https://legalcontractwebapi.azurewebsites.net/api/LegalContract/') 
+          : JSON.stringify('https://localhost:44314/api/LegalContract')
+      }), */
     ],
     devServer: {
       headers: {

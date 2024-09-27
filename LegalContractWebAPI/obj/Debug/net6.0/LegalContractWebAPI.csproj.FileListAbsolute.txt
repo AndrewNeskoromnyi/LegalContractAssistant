@@ -1,0 +1,8 @@
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Debug\net6.0\LegalContractWebAPI.csproj.AssemblyReference.cache
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Debug\net6.0\LegalContractWebAPI.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Debug\net6.0\LegalContractWebAPI.AssemblyInfoInputs.cache
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Debug\net6.0\LegalContractWebAPI.AssemblyInfo.cs
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Debug\net6.0\LegalContractWebAPI.csproj.CoreCompileInputs.cache
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Debug\net6.0\LegalContractWebAPI.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Debug\net6.0\LegalContractWebAPI.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Debug\net6.0\LegalContractWebAPI.sourcelink.json

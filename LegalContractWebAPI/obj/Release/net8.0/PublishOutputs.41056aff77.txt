@@ -1,0 +1,17 @@
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\LegalContractWebAPI.exe
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\appsettings.Development.json
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\appsettings.json
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\LegalContractWebAPI.dll
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\LegalContractWebAPI.deps.json
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\LegalContractWebAPI.runtimeconfig.json
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\LegalContractWebAPI.pdb
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\DocumentFormat.OpenXml.dll
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\DocumentFormat.OpenXml.Framework.dll
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\Microsoft.OpenApi.dll
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\OpenAI.dll
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\System.ClientModel.dll
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\System.IO.Packaging.dll
+C:\Users\Owner\OneDrive\Projects\LegalContract\word-contract-assistant\LegalContractWebAPI\obj\Release\net8.0\PubTmp\Out\System.Memory.Data.dll
