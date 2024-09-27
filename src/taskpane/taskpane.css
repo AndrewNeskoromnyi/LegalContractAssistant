@@ -69,12 +69,14 @@
  
 .ms-Button.ms-Button--hero .ms-Button-label {
   color: #0078d7;
+  font-size: 12px;
 }
 
 .ms-Button.ms-Button--hero:hover .ms-Button-label,
 .ms-Button.ms-Button--hero:focus .ms-Button-label{
   color: #005a9e;
   cursor: pointer;
+  font-size: 12px;
 }
 
 b {
@@ -98,3 +100,15 @@ div.tarea {
     height: 300px; /* or whatever measurements you want */
     overflow: auto; /* in most browsers, this will results in a scrollbar when there's more content than can fit in the dimensions defined above */
 }
+.container {
+    border: 2px solid #ccc;
+    background-color: #eee;
+    border-radius: 5px;
+    padding: 16px;
+    margin: 16px 0;
+  }
+  /* Increase the font-size of a span element */
+.container span {
+    font-size: 16px;
+    margin-right: 5px;
+  }

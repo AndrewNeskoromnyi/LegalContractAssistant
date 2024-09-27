@@ -5,10 +5,10 @@
 
 /* global document, Office, Word */
 import OpenAI from "openai";
-import { WikEdDiff } from "wikeddiff";
 
-const bibtexParser = require("@orcid/bibtex-parse-js");
-let bibFileContent;
+const xlsxParser = require('xlsx');
+let wb = xlsxParser.WorkBook;
+
 let openAIResponse = "";
 let selectedArticle="";
 
@@ -16,11 +16,11 @@ Office.onReady((info) => {
   $(document).ready(function () {
     if (info.host === Office.HostType.Word) {
       document.getElementById("app-body").style.display = "flex";
-      $("#bib-file").on("change", () => tryCatch(getFileContents));
+      $("#xlsx-file").on("change", () => tryCatch(getXlsxFileContents));
       search();
-      $("#replace-suggestion").on("click", () => tryCatch(replaceSuggestion));
-      $("#insert-suggestion").on("click", () => tryCatch(insertSuggestionAfterArticleHeader));
-      $("#clear").on("click", () => tryCatch(clearSelection));
+     // $("#replace-suggestion").on("click", () => tryCatch(replaceSuggestion));
+     // $("#insert-suggestion").on("click", () => tryCatch(insertSuggestionAfterArticleHeader));
+     // $("#clear").on("click", () => tryCatch(clearSelection));
     }
   });
 });
@@ -40,6 +40,13 @@ async function getOpenAIResponse(question) {
   });
   openAIResponse = chatCompletion.choices[0]?.message?.content;
 
+  }
+
+// test openAI
+async function getOpenAIResponseFromAssistantTEST(article,annotation,errorsectionid) {
+ 
+    openAIResponse = "<html><p>First paragraph</p><p>Second paragraph</p></html>";
+    
   }
 
 // test openAI
@@ -66,7 +73,6 @@ const thread = await openai.beta.threads.create({
 let threadId = thread.id;
   console.log('Created thread with Id: ' + threadId);
 
-//await setSelected(String(threadId));
 
  const run = openai.beta.threads.runs
   .stream(threadId, {
@@ -94,22 +100,46 @@ catch (error) {
   $errorSection.show();
   console.log(error);
 }
-
-
   }
 
-
-
 // Gets the contents of the selected file.
-async function getFileContents() {
-  const myBibFile = document.getElementById("bib-file");
+async function getXlsxFileContents() {
   const reader = new FileReader();
+  const myXLSXFile = document.getElementById("xlsx-file");
+  const use_utf8 = true;
+
   reader.onloadend = function () {
-    bibFileContent = reader.result;
-    populateCitationsFromFile();
+    
+    var data = new Uint8Array(reader.result);
+    wb = xlsxParser.read(data, {type: 'array', codepage: use_utf8 ? 65001 : void 0});
+    populateAnnotationsFromFile();
     showReferencesSection();
   };
-  reader.readAsBinaryString(myBibFile.files[0]);
+  reader.readAsArrayBuffer(myXLSXFile.files[0]);
+}
+
+function to_csv(workbook) {
+	var result = [];
+	workbook.SheetNames.forEach(function(sheetName) {
+		var csv = xlsxParser.utils.sheet_to_csv(workbook.Sheets[sheetName]);
+		if(csv.length > 0){
+			result.push("SHEET: " + sheetName);
+			result.push("");
+			result.push(csv);
+		}
+	});
+	return result.join("\n");
+}
+
+function to_json(workbook) {
+	var result = {};
+	workbook.SheetNames.forEach(function(sheetName) {
+		var roa = xlsxParser.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+		if(roa.length > 0){
+			result[sheetName] = roa;
+		}
+	});
+	return result;
 }
 
 // Searches the references list for the search text.
@@ -144,55 +174,171 @@ async function showReferencesSection() {
 }
 
 // Populates the radio buttons with the citations from the file.
-async function populateCitationsFromFile() {
-    let citationsFromFile = bibtexParser.toJSON(bibFileContent);
-    console.log(citationsFromFile);
+async function populateAnnotationsFromFile() {
 
-    let $populateRadio = $("#populate-radio");
-    let $radioButtons = $("#radio-buttons");
-    $radioButtons.empty();
-    for (let citation in citationsFromFile) {
-      let citationHtml = `<section><input type="radio" id="${citationsFromFile[citation].citationKey}" name="citation" value='${citationsFromFile[citation].entryTags.article}|${citationsFromFile[citation].entryTags.annotation}'>
-      <label for="${citationsFromFile[citation].citationKey}"><b>${citationsFromFile[citation].entryTags.annotation}</b><br>${citationsFromFile[citation].entryTags.article}</label><br><br>
-      <div>
-      <div class="taria" id="openAIPanel${citationsFromFile[citation].citationKey}" style="display: none;"></div>
-      <\div>
-      <div class="error" id="error${citationsFromFile[citation].citationKey}" style="display: none;">
-      <\div>
-      </section>`;
-      $radioButtons.append(citationHtml);
+  //var result=to_csv(wb);
+  let annotationsFromFile = to_json(wb);
+  console.log(annotationsFromFile);
+
+  let $populateRadio = $("#populate-radio");
+  let $radioButtons = $("#radio-buttons");
+  $radioButtons.empty();
+
+  var sectionKeyId = 0;
+  var newArticle = "";
+  
+  let annotationHtmlTotal = "";
+
+//TODO Create map
+const map = new Map();
+
+
+for (let i = 0; i < annotationsFromFile.Sheet1.length; ++i) {
+  var article = String(annotationsFromFile.Sheet1[i].Article);
+
+  //var sectionKey = 'sectionKey'+String(sectionKeyId);
+  //var rowKey = 'rowkey'+String(annotationsFromFile.Sheet1[i].__rowNum__);
+  var note = String(annotationsFromFile.Sheet1[i].Annotation);
+
+  if(newArticle != article)
+    {
+      map.set(article,[note]);
     }
-    $radioButtons.appendTo($populateRadio);//test
-
-    $("input[name='citation'][type='radio']").on("click", function () {
-      if ($(this).prop("checked")) {
-        //replace quatation
-        let value = String($(this).prop("value"));
-        let values = value.split("|");
-        let article = values[0];
-        let annotation = values[1];
-
-        setSelected(article);
-        enableButtons();
-
-        let errorSectionId=`error${$(this).prop("id")}`;
- selectedArticle = article.replace('Article','').trim();
-
-        findArticle(selectedArticle,errorSectionId)
-
-        
-        openAIPanel(`openAIPanel${$(this).prop("id")}`,article,annotation,errorSectionId);
-
-      } else {
-        clearSelected();
-        disableButtons();
-      }
-    });
-    $populateRadio.change();
+    else
+    {
+      map.get(article).push(note);
+    }
+    newArticle = article;
 }
 
+var i=0;
+var j=0;
+  for (const [key, value] of map) {
+      
+   // var article = annotationsFromFile.Sheet1[i][Object.keys(annotationsFromFile.Sheet1[i])[0]];
+        
+    var sectionKey = 'sectionKey'+String(i);
+   
+      var sectionHeaderHtml = `<section>
+      <div class="container">
+      <p><span><b>${key}</b></span></p>`
+
+      for(note of value){
+        var rowKey = 'rowkey'+String(j); 
+        let annotationHtml =`<input type="checkbox" id='checkbox_${sectionKey}_${rowKey}' name="annotation" value='${key.replace("'","&#039;")}|${note}' checked>
+        <label for="${rowKey}">${note}</label><br>
+        <br>`
+        annotationHtmlTotal += annotationHtml;
+        j+=1;
+    }
+      var sectionFooterHtml =`<div>
+            <div class="taria" id="openAIPanel_${sectionKey}" style="display: none;"></div>
+            <\div>
+                    <div>
+                        <span>
+                            <button class="ms-Button" id="querybutton_${sectionKey}" name="querybutton">
+                                <span class="ms-Button-label">Suggest changes</span>
+                            </button>
+                            <button class="ms-Button" id="approvebutton_${sectionKey}" name="approvebutton" disabled>
+                                <span class="ms-Button-label">Approve and replace</span>
+                            </button>
+                            <button class="ms-Button" id="insertbutton_${sectionKey}" name="insertbutton" disabled>
+                                <span class="ms-Button-label">Insert under</span>
+                            </button>
+                        </span>
+                    </div>
+            <div class="error" id="error_${sectionKey}" style="display: none;"><\div>
+            <\div>
+            </section>`;
+
+            $radioButtons.append(sectionHeaderHtml + annotationHtmlTotal + sectionFooterHtml);
+    i+=1;
+    annotationHtmlTotal = "";
+
+  }
+  $radioButtons.appendTo($populateRadio);
+
+
+  $(":button").on("click", function () {
+
+//TODO 
+//identify which button by name
+
+      let id = String($(this).prop("id"));
+      let values = id.split("_");
+      let sectionId = values[1];
+
+     
+    //TODO combine all annotations to pass to generateOpenAI response
+    
+    //find all checkboxes in this section
+   var allSectionCheckboxes = $("input[type='checkbox'][id^="+"checkbox_"+String(sectionId)+"]");
+
+    //find article for this section
+    var article=  allSectionCheckboxes[0].value.split("_")[0];
+
+
+    openAIPanel(("openAIPanel_"+ sectionId),article,"",("error_"+sectionId));
+
+    });
+
+  $("input[name='annotation'][type='checkbox']").on("click", function () {
+
+    let id = String($(this).prop("id"));
+    let values = id.split("_");
+    let sectionId = values[1];
+    //let rowId = values[2];
+
+    let queryButtonId="querybutton_"+sectionId;
+    let queryButton=$('#'+queryButtonId);
+
+    //find all checkboxes in this section
+   var allSectionCheckboxes = $("input[type='checkbox'][id^="+"checkbox_"+String(sectionId)+"]");
+   
+    if(allSectionCheckboxes.filter(":checked").length == 0)
+    {
+      //if all unchecked disable Suggestion button
+      queryButton.attr("disabled", "disabled");
+    }
+    else
+    { //at least one checked - enable Suggestion button
+      queryButton.removeAttr("disabled");
+    }
+
+/*     if ($(this).prop("checked")) {
+      queryButton.removeAttr("disabled");
+    } 
+    else {
+      queryButton.attr("disabled", "disabled");
+    } */
+  });
+
+
+
+
+
+  $populateRadio.change();
+}
 
 // Open AI panel for radio button. Close all other AI panels.
+async function openAIPanel(panelId,article,annotation,errorsectionId) {
+  let $openAISection = $("#"+panelId);  
+    $('#please_wait').show();
+  
+    // textarea is empty
+    await getOpenAIResponseFromAssistantTEST(article,annotation,errorsectionId);
+  
+    $openAISection.html(openAIResponse); //populate panel with response from openAI
+  
+    //Hide Wait, re-enable controls
+    $('#please_wait').hide();
+  
+  $openAISection.show();
+  
+  }
+
+
+/* // Open AI panel for radio button. Close all other AI panels.
 async function openAIPanel(panelId,article,annotation,errorsectionId) {
 
 $('.input').hide(); // hides all openAI panels with class input
@@ -207,20 +353,9 @@ if (String($openAISection.text()).trim().length == 0)
   $('#please_wait').show();
 
   // textarea is empty
-  await getOpenAIResponseFromAssistant(article,annotation,errorsectionId);
+  await getOpenAIResponseFromAssistantTEST(article,annotation,errorsectionId);
 
-//  // var wikEdDiffConfig;
-//  // if (wikEdDiffConfig === undefined) { wikEdDiffConfig = {}; }
-//  // wikEdDiffConfig.fullDiff = true;
-//  // wikEdDiffConfig.showBlockMoves = false;
-  
-//   var wikEdDiff = new WikEdDiff();
-//   var diffHtml = wikEdDiff.diff(
-//     "Lorem ipsum 3. Same text 1 and 2.",
-//     "Lorem ipsum 969 and 100. Same text must be typed."
-//   );
 
- // $openAISection.html(diffHtml);
   $openAISection.html(openAIResponse); //populate panel with response from openAI
 
   //Hide Wait, re-enable controls
@@ -230,39 +365,43 @@ if (String($openAISection.text()).trim().length == 0)
 
 $openAISection.show();
 
-}
+} */
 
 // Inserts the suggestion after selected text in the document.
+//Remove all paragraphs for this article
 async function insertSuggestionAfterArticleHeader() {
   await Word.run(async (context) => {
 
     try {
+      //TODO Need better algorithm to identify header string
+    var heading1Regex = "^[0-9]+\."; //String begins with number followed by period
+    
     let paragraphs = context.document.body.paragraphs;
-    context.load(paragraphs, ['items']);
-
+    context.load(paragraphs, ['text'],['items']);
     // Synchronize the document state by executing the queued commands
     await context.sync();
 
-    let listItems =  [];
     for (let i = 0; i < paragraphs.items.length; ++i) {
         let item = paragraphs.items[i];
 
-        context.load(item, ['text', 'style', 'styleBuiltIn']);
-
-        // Synchronize the document state by executing the queued commands
-        await context.sync();
-
-            if (item.text === selectedArticle) {
+        if (item.text.trim().replace("’","'").toUpperCase() === selectedArticle.trim().replace("’","'").toUpperCase()) {
 
               let paragraphsToDelete = [];
+              
+              var firstParagraph= paragraphs.items[i+1];
+              
+              //first paragraph after header must NOT BE another header, because it could be Table of Content
+              if (firstParagraph.text.match(heading1Regex))
+              {
+                  continue; // it is table of content - look for the next one 
+              }
+
               var nextParagraph;
-              var j=i+1;
+              var j=i+2;
 
               while (true) {
                 nextParagraph = paragraphs.items[j];
-                context.load(nextParagraph, ['text', 'isListItem','fields']);
-                await context.sync();
-                if (nextParagraph.isListItem)
+                if (nextParagraph.text.match(heading1Regex))
                 {
                   break;
                 }
@@ -279,31 +418,13 @@ async function insertSuggestionAfterArticleHeader() {
           
                 await context.sync();
 
-                item.insertBreak(Word.BreakType.line, Word.InsertLocation.before);
+                firstParagraph.insertHtml(openAIResponse, 'Replace');
                 await context.sync();
-
-                item.insertHtml(openAIResponse, 'End');
-                await context.sync();
-                //delete next paragraph
 
                 break;
 
-                //newLineItem.insertHtml(openAIResponse, 'After');
               }
 
-
-        
-        // if (item.style === 'Heading 1' || item.style === 'Heading 2'|| item.style === 'Heading 3') {
-        //     listItems.push({
-        //         primaryText: item.text + ' (' + item.style + ')'
-        //     });
-
-        //     if (item.text === selectedArticle) {
-        //         let newLineItem = item.getNextOrNullObject();
-        //         context.load(item, ['text', 'style', 'styleBuiltIn']);
-        //         newLineItem.insertParagraph(openAIResponse, 'After');
-        //     }
-        // }
     }
     await context.sync()
   }
@@ -368,9 +489,18 @@ async function findArticle(articletext,errorsectionid) {
     try {
     // Queue a command to search the document and ignore punctuation.
     const searchResults = context.document.body.search(articletext, {ignorePunct: true});
-    //const searchResults = context.document.body.search(articletext);
+    searchResults.load('items');
+    await context.sync()
+
+    var found;
+
+    //getLast
+    for (const p of searchResults.items) {
+      found = p;
+  }
+
+    found.select();
    
-    searchResults.getFirst().select();
     await context.sync();
 
     }

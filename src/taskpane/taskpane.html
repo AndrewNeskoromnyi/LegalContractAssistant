@@ -21,6 +21,7 @@
 
     <!-- Template styles -->
     <link href="taskpane.css" rel="stylesheet" type="text/css" />
+ 
 </head>
 
 <body class="ms-font-m ms-welcome ms-Fabric ms-bgColor-white">
@@ -39,7 +40,8 @@
         <h2 class="ms-font-l">Annotation source</h2>
         Select an annotation file to use.
         <form>
-            <input type="file" id="bib-file" name="bib-file" accept=".bib">
+            <!-- <input type="file" id="bib-file" name="bib-file" accept=".bib"> -->
+            <input type="file" id="xlsx-file" name="xlsx-file" accept=".xlsx">
         </form>
         <div id="references-section" style="display: none;">
             <h2 class="ms-font-xl">Annotations</h2>
@@ -67,7 +69,7 @@
                 </i>
             </div>
             <br>
-            <div>
+            <!-- <div>
                 <span>
                     <button class="ms-Button" id="replace-suggestion" disabled>
                         <span class="ms-Button-label">Replace selected text</span>
@@ -79,7 +81,7 @@
                         <span class="ms-Button-label">Clear selection</span>
                     </button>
                 </span>
-            </div>
+            </div> -->
         </div>
 
     </main>
