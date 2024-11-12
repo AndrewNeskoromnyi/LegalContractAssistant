@@ -26,9 +26,8 @@
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
-    "@orcid/bibtex-parse-js": "0.0.25",
+     "@orcid/bibtex-parse-js": "0.0.25",
     "core-js": "^3.37.1",
-    "openai": "^4.61.0",
     "regenerator-runtime": "^0.14.1",
     "wikeddiff": "^1.0.0",
     "xlsx": "^0.18.5"

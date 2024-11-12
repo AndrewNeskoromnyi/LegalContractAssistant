@@ -3,23 +3,149 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global document, Office, Word */
-//import OpenAI from "openai";
-//let baseAPIUrl = "https://localhost:44314/api/LegalContract/";
-
-let baseAPIUrl = "https://legalcontractwebapi.azurewebsites.net/api/LegalContract/";
 
 const xlsxParser = require("xlsx");
 let wb = xlsxParser.WorkBook;
 
 let openAIResponse = "";
-let openAIResponseNoColor = "";
+let accountId = "";
+const formattedResponse = new Map();
+  
 
 let fileContent = "";
 let assistantId = "";
 
 let currentFontName = "";
 let currentFontSize = "";
+
+let isLicensed = false
+let MAX_UNLICENSED_ANNOTATIONS = 10;
+/* #region Login */
+const config = {
+  auth: {
+    clientId: "baf61594-46cb-47a0-9be8-7939e1487286", // This is the ONLY mandatory field; everything else is optional.
+    authority: "https://syngraphusb2corganization.b2clogin.com/syngraphusb2corganization.onmicrosoft.com/B2C_1_signupsignin1", // Choose sign-up/sign-in user-flow as your default.
+    knownAuthorities: ["syngraphusb2corganization.b2clogin.com"], // You must identify your tenant's domain as a known authority.
+    redirectUri: REDIRECT_URL, 
+    
+  },
+  cache: {
+    cacheLocation: "sessionStorage", // Configures cache location. "sessionStorage" is more secure, but "localStorage" gives you SSO between tabs.
+    storeAuthStateInCookie: false, // If you wish to store cache items in cookies as well as browser cache, set this to "true".
+  },
+  system: {
+    loggerOptions: {
+      loggerCallback: (level, message, containsPii) => {
+        if (containsPii) {
+          return;
+        }
+        switch (level) {
+          case msal.LogLevel.Error:
+            console.error(message);
+            return;
+          case msal.LogLevel.Info:
+            console.info(message);
+            return;
+          case msal.LogLevel.Verbose:
+            console.debug(message);
+            return;
+          case msal.LogLevel.Warning:
+            console.warn(message);
+            return;
+        }
+      }
+    }
+  }
+};
+
+async function start() {
+
+  await login();
+
+  $("#login-section").hide();
+
+  $("#excelfile-section").show();
+}
+
+
+async function login() {
+
+    const loginRequest = {
+      scopes: ["User.ReadWrite"],
+    };
+    const msalInstance = new msal.PublicClientApplication(config);
+
+      await msalInstance
+      .loginPopup()
+      .then(function (loginResponse) {
+        accountId = loginResponse.account.homeAccountId;
+
+        //var email = loginResponse.account.idTokenClaims.emails[0];
+
+        // Display signed-in user content, call API, etc.
+        $("#dialog_welcome").text("Welcome "+loginResponse.account.name+"!");
+        
+        const licenseExpirationDate = new Date(loginResponse.account.idTokenClaims.extension_LicenseExpirationDate);
+        const today = new Date();
+        if (loginResponse.account.idTokenClaims.extension_LicenseNumber && licenseExpirationDate > today) {
+          isLicensed = true;
+        }
+        
+        if (accountId) {
+          showNavBar(true,loginResponse.account.idTokenClaims.extension_LicenseExpirationDate);}
+        else {
+          showNavBar(false,"");
+        }
+
+        //loginResponse.account.idTokenClaims.extension_LicenseNumber 
+      })
+      .catch(function (error) {
+        //login failure
+        console.log(error);
+        showNavBar(false,"");
+      });  
+
+ }
+
+async function logout() {
+    const msalInstance = new msal.PublicClientApplication(config);
+      
+    const logoutRequest = {
+      account: msalInstance.getAccountByHomeId(accountId),
+      mainWindowRedirectUri: REDIRECT_URL,
+    };
+
+    msalInstance["browserStorage"].clear();
+    await msalInstance.logoutPopup(logoutRequest);
+
+    showNavBar(false,"");
+}
+
+function showNavBar(isLoggedIn,licenseExpirationDate)
+{
+  if(isLoggedIn)
+  {
+    $("#btnLogin").hide();
+    $("#btnLogout").show();
+
+    if (isLicensed) {
+      $("#dialog_license").text("Licensed (Exp: " + licenseExpirationDate + ")");
+    } else {
+      $("#dialog_license").text("Unlicensed ("+ MAX_UNLICENSED_ANNOTATIONS +" annotations limit)");
+    }
+  }
+  else
+  {
+    $("#btnLogin").show();
+    $("#btnLogout").hide();
+
+    isLicensed = false;
+
+    $("#dialog_welcome").text("");
+    $("#dialog_license").text("Unlicensed (10 annotations limit)");
+  }
+}
+/* #endregion */
 
 /* #region File Processing */
 
@@ -83,6 +209,11 @@ async function populateAnnotationsFromFile() {
   var i = 0;
   var j = 0;
   for (const [key, value] of map) {
+    if(!isLicensed && j >= MAX_UNLICENSED_ANNOTATIONS) //limit to 10 articles for unlicensed users
+    {
+      break;
+    }
+
     var sectionKey = "sectionKey" + String(i);
 
     var sectionHeaderHtml = `<section>
@@ -99,13 +230,13 @@ async function populateAnnotationsFromFile() {
     }
     var sectionFooterHtml = `<div>
     <div class="taria" id="openAIPanel_${sectionKey}" style="display: none;"></div>
-       <div>
+       <div id="buttonsection_${sectionKey}" style="display: none;">
          <span>
-           <button class="ms-Button ms-Button--primary" id="querybutton_${sectionKey}" name="querybutton" disabled>
-               <span class="ms-Button-label">Suggest changes</span>
+           <button class="ms-Button ms-Button--primary" id="querybutton_${sectionKey}" name="querybutton" didabled>
+               <div class="ms-Button-label">Suggest changes for Article</div>
             </button>
             <button class="ms-Button ms-Button--primary" id="approvebutton_${sectionKey}" name="approvebutton" disabled>
-               <span class="ms-Button-label">Approve and replace</span>
+               <div class="ms-Button-label">Approve and replace</div>
              </button>
           </span>
         </div>
@@ -118,16 +249,22 @@ async function populateAnnotationsFromFile() {
   }
   $radioButtons.appendTo($populateRadio);
 
+  // Click on article link
   $("a[name=aheader]").on("click", function (event) {
     event.preventDefault();
     tryCatch(findArticleWhenClickOnSection(event.target.innerText, event.target.id));
   });
 
+  //click on dynamic buttons
   $(":button").on("click", async function () {
-    //TODO
-    //identify which button by name
 
     let id = String($(this).prop("id"));
+
+    if(id === "btnProcessAll") //static button has its own handler
+    {
+      return;
+    }
+
     let values = id.split("_");
     let sectionId = values[1];
 
@@ -145,13 +282,27 @@ async function populateAnnotationsFromFile() {
           annotations.push(value);
         });
 
-        openAIPanel("openAIPanel_" + sectionId, article, annotations, "error_" + sectionId);
+        openAIPanel("openAIPanel_" + sectionId, article, annotations, "article", "error_" + sectionId);
 
         //enable approve and insert buttons
         $("#approvebutton_" + sectionId).removeAttr("disabled");
-        $("#insertbutton_" + sectionId).removeAttr("disabled");
         break;
       case "approvebutton":
+
+         //Remove clor attributes from openAI response
+        let $panel = $("#openAIPanel_" + sectionId);
+
+        var clone = $panel.clone();
+        var elements = $(clone);
+        elements.find('*').removeAttr('style'); //remove highlighted text `style` attribute
+      
+        //set font to current paragraph
+        elements.find('*').css('font-family', currentFontName);
+        elements.find('*').css('font-size', (96 / 72 * currentFontSize) + "px"); ////Font size returned by the doc is in pt -> convert to px
+        openAIResponseNoColor = elements.html(); 
+    
+        formattedResponse.set(article, openAIResponseNoColor);
+
         await replaceArticleWithSuggestion(article);
         break;
       /*       case "insertbutton":
@@ -181,7 +332,32 @@ Office.onReady((info) => {
     if (info.host === Office.HostType.Word) {
       document.getElementById("app-body").style.display = "flex";
       $("#xlsx-file").on("change", () => tryCatch(getXlsxFileContents));
-      $("#btnLogin").on("click", () => tryCatch(login));
+
+      $(window).off('beforeunload'); //prevent "Leave site?" dialog
+
+      //to create async call
+      document.getElementById("btnLogin").onclick=async() => {
+      await login();
+     
+      };
+
+      //to create async call
+      document.getElementById("btnLogout").onclick=async() => {
+        await logout();
+        
+        };
+
+      //to create async call
+      document.getElementById("btnStart").onclick=async() => {
+        await start();
+        
+        };
+
+      //to create async call
+      document.getElementById("btnProcessAll").onclick=async() => {
+        await processAllAnotations();
+      };
+
 
       search();
     }
@@ -189,18 +365,14 @@ Office.onReady((info) => {
 });
 
 // When the user closes the Word window, delete assistant on the server.
-window.onbeforeunload = function() {
+window.onbeforeunload = async function() {
 
- deleteAssistant();
+ await deleteAssistant();
 
 };
 
-function login() {
-  //TODO login
-  $("#login-section").hide();
 
-  $("#header-section").show();
-}
+
 
 // Searches the references list for the search text.
 async function search() {
@@ -230,16 +402,32 @@ async function search() {
 
 // Shows the reference section.
 async function showReferencesSection() {
+  //hide file dialog
+  let $excelSection = $("#excelfile-section");
+  $excelSection.hide();
+  $excelSection.change();
+
   let $referenceSection = $("#references-section");
   $referenceSection.show();
   $referenceSection.change();
 }
 
 function enableDisableSectionElements(sectionId) {
-  let sectionQueryButton = $("#querybutton_" + sectionId);
-  let allButtons = $(":button").not(sectionQueryButton);
-  allButtons.attr("disabled", "disabled");
 
+  let panel = $("#openAIPanel_" + sectionId);
+  let sectionQueryButton = $("#querybutton_" + sectionId);
+  let sectionApproveButton = $("#approvebutton_" + sectionId);
+  
+  //let processAllChangesButton = $("#btnProcessAll");
+
+
+ let buttonsection = $("#buttonsection_" + sectionId);
+ buttonsection.show();
+
+  //let allButtons = $(":button").not(sectionQueryButton).not(processAllChangesButton).not(sectionApproveButton);
+  //llButtons.attr("disabled", "disabled");
+  //allButtons.attr("hidden", "true");
+  
   //find all other checkboxes and disable them
   var allCheckboxes = $("input[type='checkbox'][id^='checkbox_']");
   allCheckboxes.prop("disabled", true);
@@ -252,19 +440,129 @@ function enableDisableSectionElements(sectionId) {
     //if all unchecked disable Suggestion button
     sectionQueryButton.attr("disabled", "disabled");
   } else {
-    //at least one checked - enable Suggestion button
+    //at least one checked - enable Suggestion and apply button
     sectionQueryButton.removeAttr("disabled");
+
+    // Only enable Approve button if panel is not empty
+    if ($("#openAIPanel_" + sectionId).html().trim() !== "") {
+      sectionApproveButton.removeAttr("disabled");
+    }
   }
 }
 
 // Open AI panel on <Suggest Changes> click. Close all other AI panels.
-async function openAIPanel(panelId, article, annotations, errorsectionId) {
+async function processAllAnotations() {
+ try {
+  $("#please_wait").show();
+
+  //find all checked checkboxes
+  var allCheckboxes = $("input[type='checkbox'][id^='checkbox_']");
+  var allCheckedCheckboxes = allCheckboxes.filter(":checked");
+
+  var articleAnnotations = [];
+
+  allCheckedCheckboxes.each(function () {
+    var article = this.value.split("|")[0];
+    var annotation = this.value.split("|")[1];
+    var existingArticle = articleAnnotations.find(a => a.article === article);
+
+    if (existingArticle) {
+      existingArticle.annotations.push(annotation);
+    } else {
+      articleAnnotations.push({
+        article: article,
+        annotations: [annotation]
+      });
+    }
+  });
+
+  
+  // textarea is empty
+  await getOpenAIResponseFromAssistant(articleAnnotations, "document", "errorProcessAll");
+
+        // Wait until the article processing is complete
+        await new Promise((resolve) => {
+          document.addEventListener("articleProcessingComplete", function handler(event) {
+            document.removeEventListener("articleProcessingComplete", handler);
+            resolve();
+          });
+        });
+  
+  // Create a map from the openAIResponse where key is a header outlined by <h1> and </h1> tags and value is the HTML text under the header
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(openAIResponse, 'text/html');
+  const headers = doc.querySelectorAll('h1');
+  const map = new Map();
+  
+  headers.forEach(header => {
+    const key = header.textContent;
+    let value = '';
+    let sibling = header.nextElementSibling;
+
+    while (sibling && sibling.tagName !== 'H1') {
+      value += sibling.outerHTML;
+      sibling = sibling.nextElementSibling;
+    }
+
+    map.set(key, value);
+    
+  });
+
+  // Iterate through the map and log the key-value pairs
+  for (const [key, value] of map) {
+
+      // Find the element with name "aheader" and value equal to the key of the map
+      let element = $(`a[name='aheader']`).filter(function() {
+        return $(this).text() === key;
+      });
+
+    
+      if (element.length) {
+
+        let $openAISection = $("#openAIPanel_" + element[0].id);
+        $openAISection.html(value); //populate panel with response from openAI
+        $openAISection.show();
+    
+   
+      }
+  
+  }
+
+  //Hide Wait, re-enable controls
+  $("#please_wait").hide();
+
+  
+  $("#color-annotation-map").show();
+
+}
+catch (error) {
+  $("#please_wait").hide();
+  $errorSection.text(error.message);
+  $errorSection.show();
+  console.log(error);
+}
+}
+
+
+
+
+// Open AI panel on <Suggest Changes> click. Close all other AI panels.
+async function openAIPanel(panelId, article, annotations, scope, errorsectionId) {
   let $openAISection = $("#" + panelId);
 
   $("#please_wait").show();
 
+
+  var articleAnnotations = [];
+  articleAnnotations.push(
+    {
+        article: article,
+        annotations: annotations
+      }
+    );
+  
   // textarea is empty
-  await getOpenAIResponseFromAssistant(article, annotations, errorsectionId);
+  await getOpenAIResponseFromAssistant(articleAnnotations, scope, errorsectionId);
 
         // Wait until the article processing is complete
         await new Promise((resolve) => {
@@ -277,17 +575,6 @@ async function openAIPanel(panelId, article, annotations, errorsectionId) {
 
   $openAISection.html(openAIResponse); //populate panel with response from openAI
 
-  var clone = $openAISection.clone();
-
-  var elements = $(clone);
-  elements.find('*').removeAttr('style'); //remove highlighted text `style` attribute
-
-  //set font to current paragraph
-  elements.find('*').css('font-family', currentFontName);
-  elements.find('*').css('font-size', (96 / 72 * currentFontSize) + "px"); ////Font size returned by the doc is in pt -> convert to px
-  
-
-  openAIResponseNoColor = elements.html();
 
   //Hide Wait, re-enable controls
   $("#please_wait").hide();
@@ -296,15 +583,8 @@ async function openAIPanel(panelId, article, annotations, errorsectionId) {
   $("#color-annotation-map").show();
 }
 
-function showWait() {
-  document.getElementById("overlay").style.display = "flex";
-}
 
-function hideWait() {
-  document.getElementById("overlay").style.display = "none";
-}
-
-async function getOpenAIResponseFromAssistant(article, annotations, errorsectionid) {
+async function getOpenAIResponseFromAssistant(articleAnnotations, scope, errorsectionid) {
   try {
     let $errorSection = $("#" + errorsectionid);
     $errorSection.hide();
@@ -330,11 +610,12 @@ async function getOpenAIResponseFromAssistant(article, annotations, errorsection
 
       }
 
+
       let data = {
-        article: article,
-        annotations: annotations,
+        articles: articleAnnotations,
         assistantId: assistantId,
-        fileContent: fileContent
+        fileContent: fileContent,
+        scope: scope
       };
 
       await processArticle(data,errorsectionid);
@@ -346,44 +627,6 @@ async function getOpenAIResponseFromAssistant(article, annotations, errorsection
     console.log(error);
   }
 }
-
-/* // Listen for the custom event to notify that the file preparation is complete
-document.addEventListener("filePreparationComplete", function(event) {
-  // Access the file content from the event detail
-  fileContent = event.detail.fileContent;
-  console.log("File preparation complete. File content is ready.");
-  // You can now proceed with further processing using the fileContent
-}); */
-
-
-/* // Clears the selected radio button.
-async function clearSelection() {
-  $("input[name='citation'][type='radio']:checked").prop("checked", false);
-  $(".input").hide(); // hides all openAI panels with class input
-  $(".error").hide(); // hides all openAI panels with class error
-  clearSelected();
-  disableButtons();
-}
-
-// Sets the selected item.
-async function setSelected(text) {
-  $("#selected").text(text);
-} */
-
-/* // Clears the selected item.
-async function clearSelected() {
-  $("#selected").text("");
-}
-
-// Enables the buttons.
-async function enableButtons() {
-  $(".ms-Button").removeAttr("disabled");
-}
-
-// Disables the buttons.
-async function disableButtons() {
-  $(".ms-Button").attr("disabled", "disabled");
-} */
 
 // Default helper for invoking an action and handling errors.
 async function tryCatch(callback) {
@@ -442,7 +685,13 @@ async function replaceArticleWithSuggestion(article) {
 
           await context.sync();
 
-          firstParagraph.insertHtml(openAIResponseNoColor, "Replace");
+              // Insert the suggestion after the selected text in the document.
+          if (formattedResponse.has(article)) {
+            firstParagraph.insertHtml(formattedResponse.get(article), "Replace");
+            console.log(`Key: ${key}, Value: ${formattedResponse.get(key)}`);
+          }
+
+
           await context.sync();
          
 
@@ -451,44 +700,12 @@ async function replaceArticleWithSuggestion(article) {
       }
       await context.sync();
     } catch (error) {
-      console.log(error);
+      //console.log(error);
     }
   });
 }
 
-/* // Inserts the suggestion after selected text in the document.
-async function insertSuggestion() {
-  await Word.run(async (context) => {
-    const radioId = $("input[name='citation'][type='radio']:checked").attr("id");
-    let $openAISection = $("#openAIPanel" + radioId);
-    let suggestion = $openAISection.text();
 
-    const doc = context.document;
-    const originalRange = doc.getSelection();
-
-    originalRange.insertHtml(suggestion, "After");
-
-    await context.sync();
-    console.log(`Inserted suggestion: ${citationsuggestion}`);
-  });
-} */
-
-/* // Replaces selected text in the document with suggestion.
-async function insertSuggestionUnderArticle() {
-  await Word.run(async (context) => {
-    const radioId = $("input[name='citation'][type='radio']:checked").attr("id");
-    let $openAISection = $("#openAIPanel" + radioId);
-    let suggestion = $openAISection.text();
-
-    const doc = context.document;
-    const originalRange = doc.getSelection();
-    originalRange.insertText(suggestion, Word.InsertLocation.replace);
-
-    await context.sync();
-
-    console.log(`Replacement suggestion: ${suggestion}`);
-  });
-} */
 
 async function findArticleWhenClickOnSection(articleText, sectionId) {
   await Word.run(async (context) => {
@@ -518,17 +735,18 @@ async function findArticleWhenClickOnSection(articleText, sectionId) {
       currentFontName = nextRange.font.name;
       currentFontSize = nextRange.font.size;
       
-      
       await context.sync();
 
+     
     } catch (error) {
       let $errorSection = $("#" + errorsectionid);
-      $errorSection.text(error.message);
+      $errorSection.text("Cannot find the article...");
       $errorSection.show();
-      console.log(error);
+      //console.log(error);
     }
   });
 }
+
 /* #endregion */
 
 /* #region  API */
@@ -537,7 +755,7 @@ async function processArticle(data,errorsectionid) {
 
   $.ajax({
     type: "POST",
-    url: baseAPIUrl + "ProcessArticle",
+    url: API_URL + "ProcessArticle",
     data: jsonData,
     dataType: "json",
     contentType: "application/json; charset=utf-8",
@@ -561,7 +779,7 @@ async function deleteAssistant() {
   
   $.ajax({
     type: "POST",
-    url: baseAPIUrl + "DeleteAssistant",
+    url: API_URL + "DeleteAssistant",
     data: JSON.stringify(assistantId),
     dataType: "json",
     contentType: "application/json; charset=utf-8",

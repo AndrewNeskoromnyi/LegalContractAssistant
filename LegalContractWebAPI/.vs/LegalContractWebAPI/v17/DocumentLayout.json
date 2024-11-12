@@ -11,16 +11,16 @@
       "RelativeMoniker": "D:0:0:{69F1611D-01DD-48B6-9060-A48D2911FE99}|LegalContractWebAPI.csproj|solutionrelative:common\\openaihelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{69F1611D-01DD-48B6-9060-A48D2911FE99}|LegalContractWebAPI.csproj|c:\\users\\owner\\onedrive\\projects\\legalcontract\\word-contract-assistant\\legalcontractwebapi\\models\\models.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{69F1611D-01DD-48B6-9060-A48D2911FE99}|LegalContractWebAPI.csproj|solutionrelative:models\\models.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{69F1611D-01DD-48B6-9060-A48D2911FE99}|LegalContractWebAPI.csproj|c:\\users\\owner\\onedrive\\projects\\legalcontract\\word-contract-assistant\\legalcontractwebapi\\legalcontractwebapi.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
       "RelativeMoniker": "D:0:0:{69F1611D-01DD-48B6-9060-A48D2911FE99}|LegalContractWebAPI.csproj|solutionrelative:legalcontractwebapi.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
     },
     {
       "AbsoluteMoniker": "D:0:0:{69F1611D-01DD-48B6-9060-A48D2911FE99}|LegalContractWebAPI.csproj|c:\\users\\owner\\onedrive\\projects\\legalcontract\\word-contract-assistant\\legalcontractwebapi\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{69F1611D-01DD-48B6-9060-A48D2911FE99}|LegalContractWebAPI.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{69F1611D-01DD-48B6-9060-A48D2911FE99}|LegalContractWebAPI.csproj|c:\\users\\owner\\onedrive\\projects\\legalcontract\\word-contract-assistant\\legalcontractwebapi\\models\\models.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{69F1611D-01DD-48B6-9060-A48D2911FE99}|LegalContractWebAPI.csproj|solutionrelative:models\\models.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,7 +34,7 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\Owner\\OneDrive\\Projects\\LegalContract\\word-contract-assistant\\LegalContractWebAPI\\appsettings.json",
               "RelativeDocumentMoniker": "appsettings.json",
@@ -43,7 +43,8 @@
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2024-10-05T23:29:49.981Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -53,7 +54,7 @@
               "RelativeDocumentMoniker": "Controllers\\LegalContractController.cs",
               "ToolTip": "C:\\Users\\Owner\\OneDrive\\Projects\\LegalContract\\word-contract-assistant\\LegalContractWebAPI\\Controllers\\LegalContractController.cs",
               "RelativeToolTip": "Controllers\\LegalContractController.cs",
-              "ViewState": "AQIAAC0AAAAAAAAAAAAowHYAAAAAAAAA",
+              "ViewState": "AQIAAAwAAAAAAAAAAAAqwBkAAAAiAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-13T00:09:10.184Z",
               "IsPinned": true,
@@ -67,7 +68,7 @@
               "RelativeDocumentMoniker": "Common\\OpenAIHelper.cs",
               "ToolTip": "C:\\Users\\Owner\\OneDrive\\Projects\\LegalContract\\word-contract-assistant\\LegalContractWebAPI\\Common\\OpenAIHelper.cs",
               "RelativeToolTip": "Common\\OpenAIHelper.cs",
-              "ViewState": "AQIAALgAAAAAAAAAAAAcwDUAAAAOAAAA",
+              "ViewState": "AQIAAC0AAAAAAAAAAAAowDUAAAAOAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-13T00:11:46.807Z",
               "IsPinned": true,
@@ -75,20 +76,21 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 2,
               "Title": "Models.cs",
               "DocumentMoniker": "C:\\Users\\Owner\\OneDrive\\Projects\\LegalContract\\word-contract-assistant\\LegalContractWebAPI\\Models\\Models.cs",
               "RelativeDocumentMoniker": "Models\\Models.cs",
               "ToolTip": "C:\\Users\\Owner\\OneDrive\\Projects\\LegalContract\\word-contract-assistant\\LegalContractWebAPI\\Models\\Models.cs",
               "RelativeToolTip": "Models\\Models.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAAAAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAqwBAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-13T00:10:33.398Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "LegalContractWebAPI",
               "DocumentMoniker": "C:\\Users\\Owner\\OneDrive\\Projects\\LegalContract\\word-contract-assistant\\LegalContractWebAPI\\LegalContractWebAPI.csproj",
               "RelativeDocumentMoniker": "LegalContractWebAPI.csproj",

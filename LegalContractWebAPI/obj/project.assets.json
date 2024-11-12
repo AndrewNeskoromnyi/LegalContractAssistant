@@ -2,10 +2,10 @@
   "version": 3,
   "targets": {
     "net8.0": {
-      "DocumentFormat.OpenXml/3.1.0": {
+      "DocumentFormat.OpenXml/3.1.1": {
         "type": "package",
         "dependencies": {
-          "DocumentFormat.OpenXml.Framework": "3.1.0"
+          "DocumentFormat.OpenXml.Framework": "3.1.1"
         },
         "compile": {
           "lib/net8.0/DocumentFormat.OpenXml.dll": {
@@ -18,10 +18,10 @@
           }
         }
       },
-      "DocumentFormat.OpenXml.Framework/3.1.0": {
+      "DocumentFormat.OpenXml.Framework/3.1.1": {
         "type": "package",
         "dependencies": {
-          "System.IO.Packaging": "8.0.0"
+          "System.IO.Packaging": "8.0.1"
         },
         "compile": {
           "lib/net8.0/DocumentFormat.OpenXml.Framework.dll": {
@@ -174,7 +174,7 @@
           "buildTransitive/netcoreapp3.1/_._": {}
         }
       },
-      "System.IO.Packaging/8.0.0": {
+      "System.IO.Packaging/8.0.1": {
         "type": "package",
         "compile": {
           "lib/net8.0/System.IO.Packaging.dll": {
@@ -271,15 +271,15 @@
     }
   },
   "libraries": {
-    "DocumentFormat.OpenXml/3.1.0": {
-      "sha512": "J+GtIzVJpj6Wbhc2sYqmXEqAi2LYgWkU5LdVE/vCtNRr8WHDLHRL0lTbSlvTeLzSI5Ws6AC6TPuJR68/3wsa4A==",
+    "DocumentFormat.OpenXml/3.1.1": {
+      "sha512": "2z9QBzeTLNNKWM9SaOSDMegfQk/7hDuElOsmF77pKZMkFRP/GHA/W/4yOAQD9kn15N/FsFxHn3QVYkatuZghiA==",
       "type": "package",
-      "path": "documentformat.openxml/3.1.0",
+      "path": "documentformat.openxml/3.1.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "README.md",
-        "documentformat.openxml.3.1.0.nupkg.sha512",
+        "documentformat.openxml.3.1.1.nupkg.sha512",
         "documentformat.openxml.nuspec",
         "icon.png",
         "lib/net35/DocumentFormat.OpenXml.dll",
@@ -294,15 +294,15 @@
         "lib/netstandard2.0/DocumentFormat.OpenXml.xml"
       ]
     },
-    "DocumentFormat.OpenXml.Framework/3.1.0": {
-      "sha512": "yz78IAteV+/jdpmQRlBIfhsmYfDYqgPSyPUsyT7KnfDlTTvqY6Zf5inMjTSwe2bnN8wv9dLD0C2sAkActXIy/A==",
+    "DocumentFormat.OpenXml.Framework/3.1.1": {
+      "sha512": "6APEp/ElZV58S/4v8mf4Ke3ONEDORs64MqdD64Z7wWpcHANB9oovQsGIwtqjnKihulOj7T0a6IxHIHOfMqKOng==",
       "type": "package",
-      "path": "documentformat.openxml.framework/3.1.0",
+      "path": "documentformat.openxml.framework/3.1.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "README.md",
-        "documentformat.openxml.framework.3.1.0.nupkg.sha512",
+        "documentformat.openxml.framework.3.1.1.nupkg.sha512",
         "documentformat.openxml.framework.nuspec",
         "icon.png",
         "lib/net35/DocumentFormat.OpenXml.Framework.dll",
@@ -709,10 +709,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "System.IO.Packaging/8.0.0": {
-      "sha512": "8g1V4YRpdGAxFcK8v9OjuMdIOJSpF30Zb1JGicwVZhly3I994WFyBdV6mQEo8d3T+URQe55/M0U0eIH0Hts1bg==",
+    "System.IO.Packaging/8.0.1": {
+      "sha512": "KYkIOAvPexQOLDxPO2g0BVoWInnQhPpkFzRqvNrNrMhVT6kqhVr0zEb6KCHlptLFukxnZrjuMVAnxK7pOGUYrw==",
       "type": "package",
-      "path": "system.io.packaging/8.0.0",
+      "path": "system.io.packaging/8.0.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -733,7 +733,7 @@
         "lib/net8.0/System.IO.Packaging.xml",
         "lib/netstandard2.0/System.IO.Packaging.dll",
         "lib/netstandard2.0/System.IO.Packaging.xml",
-        "system.io.packaging.8.0.0.nupkg.sha512",
+        "system.io.packaging.8.0.1.nupkg.sha512",
         "system.io.packaging.nuspec",
         "useSharedDesignerContext.txt"
       ]
@@ -865,7 +865,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
-      "DocumentFormat.OpenXml >= 3.1.0",
+      "DocumentFormat.OpenXml >= 3.1.1",
       "OpenAI >= 2.0.0",
       "Swashbuckle.AspNetCore >= 6.4.0"
     ]
@@ -922,7 +922,7 @@
         "dependencies": {
           "DocumentFormat.OpenXml": {
             "target": "Package",
-            "version": "[3.1.0, )"
+            "version": "[3.1.1, )"
           },
           "OpenAI": {
             "target": "Package",

@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+const webpack = require('webpack');
 
 const devCerts = require("office-addin-dev-certs");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
@@ -6,6 +7,9 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const urlDev = "https://localhost:3000/";
 const urlProd = "https://syngraphus.com/LegalContractWordAddIn/"; // CHANGE THIS TO YOUR PRODUCTION DEPLOYMENT LOCATION
+
+//export const API_URL = "";
+//export const REDIRECT_URL = "";
 
 async function getHttpsOptions() {
   const httpsOptions = await devCerts.getHttpsServerOptions();
@@ -77,12 +81,16 @@ module.exports = async (env, options) => {
           },
         ],
       }),
-/*       new webpack.DefinePlugin({
+        new webpack.DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
         API_URL: process.env.NODE_ENV === 'production' 
           ? JSON.stringify('https://legalcontractwebapi.azurewebsites.net/api/LegalContract/') 
-          : JSON.stringify('https://localhost:44314/api/LegalContract')
-      }), */
+          : JSON.stringify('https://localhost:44314/api/LegalContract'),
+        REDIRECT_URL: process.env.NODE_ENV === 'production' 
+          ? JSON.stringify('https://syngraphus.com/LegalContractWordAddIn/taskpane.html') 
+          : JSON.stringify('https://localhost:3000/taskpane.html'),
+      }), 
+      
     ],
     devServer: {
       headers: {
