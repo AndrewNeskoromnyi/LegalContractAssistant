@@ -2,3 +2,5 @@ node_modules
 dist
 Documents/Workflow Word Add-in.pptx
 word-contract-assistant.zip
+LegalContractWebAPI\bin
+LegalContractWebAPI\obj
