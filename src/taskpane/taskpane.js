@@ -151,7 +151,11 @@ function showNavBar(isLoggedIn,licenseExpirationDate)
 
 // Gets the contents of the selected file.
 async function getXlsxFileContents() {
+async function getXlsxFileContents() {
   const reader = new FileReader();
+  const myXLSXFile = document.getElementById("xlsx-file");
+  const use_utf8 = true;
+
   const myXLSXFile = document.getElementById("xlsx-file");
   const use_utf8 = true;
 

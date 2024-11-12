@@ -70,12 +70,14 @@
 .ms-Button.ms-Button--hero .ms-Button-label {
   color: #0078d7;
   font-size: 12px;
+  font-size: 12px;
 }
 
 .ms-Button.ms-Button--hero:hover .ms-Button-label,
 .ms-Button.ms-Button--hero:focus .ms-Button-label{
   color: #005a9e;
   cursor: pointer;
+  font-size: 12px;
   font-size: 12px;
 }
 
